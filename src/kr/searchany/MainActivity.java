@@ -24,27 +24,26 @@ import org.xml.sax.SAXException;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.AdapterView.OnItemClickListener;
 
 public class MainActivity extends Activity {
 
 	EditText searchWord;
 
-    ListView feedListView;
+	ListView feedListView;
 	ArrayList<Feed> feedList = new ArrayList<Feed>();
 	Feed selectedFeed;
-	
-    ArrayAdapter<Feed> aa;
+
+	ArrayAdapter<Feed> aa;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -54,15 +53,16 @@ public class MainActivity extends Activity {
 		searchWord = (EditText) findViewById(R.id.editText1);
 		Button searchButton = (Button) findViewById(R.id.button1);
 
-		feedListView = (ListView)this.findViewById(R.id.list);
+		feedListView = (ListView) this.findViewById(R.id.list);
 
-	    feedListView.setOnItemClickListener(new OnItemClickListener() {
-	        @Override
-	        public void onItemClick(AdapterView _av, View _v, int _index, long arg3) {
-	            selectedFeed = feedList.get(_index);
-	            showDetail();
-	        }
-	    });
+		feedListView.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView _av, View _v, int _index,
+					long arg3) {
+				selectedFeed = feedList.get(_index);
+				showDetail();
+			}
+		});
 
 		searchButton.setOnClickListener(new View.OnClickListener() {
 
@@ -71,15 +71,24 @@ public class MainActivity extends Activity {
 				refreshList();
 			}
 		});
-		
-	    int layoutID = android.R.layout.simple_list_item_1;
-	    aa = new ArrayAdapter<Feed>(this, layoutID , feedList);
-	    feedListView.setAdapter(aa);
+
+		int layoutID = android.R.layout.simple_list_item_1;
+		aa = new ArrayAdapter<Feed>(this, layoutID, feedList);
+		feedListView.setAdapter(aa);
 
 	}
 
 	protected void showDetail() {
 		Intent intent = new Intent(this, DetailActivity.class);
+
+		String title = selectedFeed.getTitle();
+		String description = selectedFeed.getDescription();
+		String link = selectedFeed.getLink();
+
+		intent.putExtra("title", title);
+		intent.putExtra("description", description);
+		intent.putExtra("link", link);
+
 		startActivity(intent);
 	}
 
@@ -126,20 +135,22 @@ public class MainActivity extends Activity {
 						Element entry = (Element) nl.item(i);
 						Element title = (Element) entry.getElementsByTagName(
 								"title").item(0);
-						// Element g =
-						// (Element)entry.getElementsByTagName("georss:point").item(0);
 						Element when = (Element) entry.getElementsByTagName(
 								"pubDate").item(0);
 						Element link = (Element) entry.getElementsByTagName(
 								"link").item(0);
+						Element description = (Element) entry.getElementsByTagName(
+								"description").item(0);
 
-						String details = title.getFirstChild().getNodeValue();
+						String titleString = title.getFirstChild()
+								.getNodeValue();
 						String linkString = link.getFirstChild().getNodeValue();
+						String descriptionString = description.getFirstChild().getNodeValue();
 
 						// String point = g.getFirstChild().getNodeValue();
 						String dt = when.getFirstChild().getNodeValue();
 						SimpleDateFormat sdf = new SimpleDateFormat(
-								"EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
+								"yyyyMMddHHmmss", Locale.ENGLISH);
 						Date qdate = new GregorianCalendar(0, 0, 0).getTime();
 						try {
 							qdate = sdf.parse(dt);
@@ -147,20 +158,8 @@ public class MainActivity extends Activity {
 							e.printStackTrace();
 						}
 
-						// String[] location = point.split(" ");
-						Location l = new Location("dummyGPS");
-						// l.setLatitude(Double.parseDouble(location[0]));
-						// l.setLongitude(Double.parseDouble(location[1]));
-
-						// String magnitudeString = details.split(" ")[1];
-						// int end = magnitudeString.length()-1;
-						// double magnitude =
-						// Double.parseDouble(magnitudeString.substring(0,
-						// end));
-
-						// details = details.split(",")[1].trim();
-
-						Feed quake = new Feed(qdate, details, l, 0, linkString);
+						Feed quake = new Feed(titleString, qdate, descriptionString,
+								null, 0, linkString);
 
 						// 새로운 지진 정보를 처리한다.
 						addNewQuake(quake);
@@ -178,13 +177,13 @@ public class MainActivity extends Activity {
 		} finally {
 		}
 	}
-	
-	private void addNewQuake(Feed _quake) {
-	    // 새로운 지진 정보를 지진 정보 리스트에 추가한다.
-	    feedList.add(_quake);
 
-	    // 배열 어댑터에 하부 데이터의 변경 사실을 통지한다.
-	    aa.notifyDataSetChanged();
+	private void addNewQuake(Feed _quake) {
+		// 새로운 지진 정보를 지진 정보 리스트에 추가한다.
+		feedList.add(_quake);
+
+		// 배열 어댑터에 하부 데이터의 변경 사실을 통지한다.
+		aa.notifyDataSetChanged();
 	}
 
 }
