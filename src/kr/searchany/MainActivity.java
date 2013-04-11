@@ -23,15 +23,18 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.AdapterView.OnItemClickListener;
 
 public class MainActivity extends Activity {
 
@@ -50,8 +53,16 @@ public class MainActivity extends Activity {
 
 		searchWord = (EditText) findViewById(R.id.editText1);
 		Button searchButton = (Button) findViewById(R.id.button1);
-	    feedListView = (ListView)this.findViewById(R.id.list);
 
+		feedListView = (ListView)this.findViewById(R.id.list);
+
+	    feedListView.setOnItemClickListener(new OnItemClickListener() {
+	        @Override
+	        public void onItemClick(AdapterView _av, View _v, int _index, long arg3) {
+	            selectedFeed = feedList.get(_index);
+	            showDetail();
+	        }
+	    });
 
 		searchButton.setOnClickListener(new View.OnClickListener() {
 
@@ -65,6 +76,11 @@ public class MainActivity extends Activity {
 	    aa = new ArrayAdapter<Feed>(this, layoutID , feedList);
 	    feedListView.setAdapter(aa);
 
+	}
+
+	protected void showDetail() {
+		Intent intent = new Intent(this, DetailActivity.class);
+		startActivity(intent);
 	}
 
 	@Override
